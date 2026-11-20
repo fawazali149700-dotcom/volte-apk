@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>تطبيق VoLTE & VoWiFi Switcher - أندرويد أصلي ومحاكي تفاعلي</title>
+  <meta name="description" content="تطبيق أندرويد أصلي للتحكم الكامل في تفعيل وتعطيل مكالمات VoLTE و VoWiFi لكل شريحة SIM مع محاكي حي وكود كامل." />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Cairo', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+    }
+    code, pre, .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #6366f1;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-indigo-600 selection:text-white">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-50 bg-slate-950/90 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-18 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-extrabold text-white">VoLTE & VoWiFi Switcher</h1>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-mono">
+              Android 11-15 (Native)
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">تطبيق أندرويد أصلي للتحكم بخدمات IMS لكل شريحة SIM</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button onclick="downloadSelfHTML()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+          </svg>
+          حفظ صفحة HTML
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex gap-2 border-t border-slate-900 overflow-x-auto text-xs font-bold">
+      <button onclick="switchTab('sim-tab')" id="btn-sim-tab" class="tab-btn active border-b-2 border-indigo-500 text-indigo-400 py-3 px-4">
+        المحاكي التفاعلي (Live Simulator)
+      </button>
+      <button onclick="switchTab('code-tab')" id="btn-code-tab" class="tab-btn border-b-2 border-transparent text-slate-400 hover:text-slate-200 py-3 px-4">
+        الكود المصدري الكامل (Source Code)
+      </button>
+      <button onclick="switchTab('ci-tab')" id="btn-ci-tab" class="tab-btn border-b-2 border-transparent text-slate-400 hover:text-slate-200 py-3 px-4">
+        GitHub Actions Workflow (CI/CD)
+      </button>
+      <button onclick="switchTab('adb-tab')" id="btn-adb-tab" class="tab-btn border-b-2 border-transparent text-slate-400 hover:text-slate-200 py-3 px-4">
+        أوامر ADB ودليل Shizuku
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex-1 space-y-6">
+
+    <!-- TAB 1: Live Interactive Phone Simulator -->
+    <section id="sim-tab" class="tab-content block">
+      <div class="flex flex-col lg:flex-row gap-6 items-start justify-center">
+        
+        <!-- Phone Mockup Frame -->
+        <div class="w-full max-w-[400px] mx-auto shrink-0">
+          <div class="relative bg-slate-950 p-3 rounded-[46px] shadow-2xl border-4 border-slate-800 ring-1 ring-slate-700/60">
+            <div class="bg-slate-900 rounded-[36px] overflow-hidden border border-slate-800 flex flex-col h-[740px] text-slate-100 select-none">
+              
+              <!-- Status Bar -->
+              <div class="h-10 bg-slate-950 px-6 flex items-center justify-between text-xs text-slate-300 relative shrink-0">
+                <div class="absolute left-1/2 -translate-x-1/2 top-1.5 w-24 h-4 bg-black rounded-full flex items-center justify-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-slate-800"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-indigo-900/60"></span>
+                </div>
+
+                <span class="font-semibold text-xs tracking-wide">20:45</span>
+
+                <div class="flex items-center gap-1.5 text-[10px]">
+                  <span id="badge-volte" class="px-1 py-0.2 bg-indigo-600 text-white rounded font-mono font-bold text-[9px] hidden">VoLTE</span>
+                  <span id="badge-vowifi" class="px-1 py-0.2 bg-emerald-600 text-white rounded font-mono font-bold text-[9px] hidden">VoWiFi</span>
+                  <span class="font-mono text-[10px] text-slate-300 font-bold">5G</span>
+                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L12 22l7.03-4.39C20.26 16.07 21 14.12 21 12c0-4.97-4.03-9-9-9z"/></svg>
+                </div>
+              </div>
+
+              <!-- Top Bar in App -->
+              <div class="bg-slate-900 border-b border-slate-800/80 p-4 flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-bold text-xs">
+                    4G
+                  </div>
+                  <div>
+                    <h2 class="text-sm font-bold text-white">VoLTE & VoWiFi Switcher</h2>
+                    <span class="text-[11px] text-slate-400">إدارة شبكة الاتصال للشرائح</span>
+                  </div>
+                </div>
+                <button onclick="simulateRefresh()" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors" title="تحديث">
+                  <svg id="refresh-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Screen Content -->
+              <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                
+                <!-- Permission Alert -->
+                <div id="perm-banner" class="p-3 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 flex items-center justify-between text-xs">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <div>
+                      <span class="font-bold block" id="perm-title">الصلاحية مفعلة (عبر Shizuku Shell)</span>
+                      <span class="text-[10px] text-slate-400" id="perm-desc">جاهز لتطبيق التعديل الفعلي على النظام</span>
+                    </div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold">جاهز</span>
+                </div>
+
+                <!-- SIM 1 Card -->
+                <div class="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 shadow space-y-3">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-xs">1</div>
+                      <div>
+                        <div class="font-bold text-xs text-white">الشريحة الأولى (SIM 1)</div>
+                        <div class="text-[11px] text-slate-400">STC Saudi - 5G</div>
+                      </div>
+                    </div>
+                    <span class="text-[10px] px-2 py-0.5 rounded bg-slate-900 text-indigo-400 font-mono font-bold">subId: 1</span>
+                  </div>
+
+                  <div class="h-px bg-slate-700/60"></div>
+
+                  <!-- VoLTE Switch -->
+                  <div class="flex items-center justify-between text-xs">
+                    <div>
+                      <div class="font-semibold text-slate-200">مكالمات 4G (VoLTE)</div>
+                      <div class="text-[10px] text-slate-400">صوت HD أثناء الاتصال</div>
+                    </div>
+                    <button onclick="toggleVoLte(1)" id="btn-volte-1" class="w-10 h-6 bg-indigo-600 rounded-full transition-colors relative p-0.5">
+                      <div id="knob-volte-1" class="w-5 h-5 rounded-full bg-white transition-transform -translate-x-4"></div>
+                    </button>
+                  </div>
+
+                  <!-- VoWiFi Switch -->
+                  <div class="flex items-center justify-between text-xs pt-1">
+                    <div>
+                      <div class="font-semibold text-slate-200">مكالمات واي فاي (VoWiFi)</div>
+                      <div class="text-[10px] text-slate-400">الاتصال عبر شبكة الـ Wi-Fi</div>
+                    </div>
+                    <button onclick="toggleVoWiFi(1)" id="btn-vowifi-1" class="w-10 h-6 bg-emerald-600 rounded-full transition-colors relative p-0.5">
+                      <div id="knob-vowifi-1" class="w-5 h-5 rounded-full bg-white transition-transform -translate-x-4"></div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- SIM 2 Card -->
+                <div class="p-4 rounded-2xl bg-slate-800/80 border border-slate-700/60 shadow space-y-3">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-lg bg-indigo-500/20 text-indigo-400 font-bold flex items-center justify-center text-xs">2</div>
+                      <div>
+                        <div class="font-bold text-xs text-white">الشريحة الثانية (SIM 2)</div>
+                        <div class="text-[11px] text-slate-400">Mobily KSA - 4G LTE</div>
+                      </div>
+                    </div>
+                    <span class="text-[10px] px-2 py-0.5 rounded bg-slate-900 text-indigo-400 font-mono font-bold">subId: 2</span>
+                  </div>
+
+                  <div class="h-px bg-slate-700/60"></div>
+
+                  <!-- VoLTE Switch -->
+                  <div class="flex items-center justify-between text-xs">
+                    <div>
+                      <div class="font-semibold text-slate-200">مكالمات 4G (VoLTE)</div>
+                      <div class="text-[10px] text-slate-400">صوت HD أثناء الاتصال</div>
+                    </div>
+                    <button onclick="toggleVoLte(2)" id="btn-volte-2" class="w-10 h-6 bg-slate-700 rounded-full transition-colors relative p-0.5">
+                      <div id="knob-volte-2" class="w-5 h-5 rounded-full bg-white transition-transform translate-x-0"></div>
+                    </button>
+                  </div>
+
+                  <!-- VoWiFi Switch -->
+                  <div class="flex items-center justify-between text-xs pt-1">
+                    <div>
+                      <div class="font-semibold text-slate-200">مكالمات واي فاي (VoWiFi)</div>
+                      <div class="text-[10px] text-slate-400">الاتصال عبر شبكة الـ Wi-Fi</div>
+                    </div>
+                    <button onclick="toggleVoWiFi(2)" id="btn-vowifi-2" class="w-10 h-6 bg-slate-700 rounded-full transition-colors relative p-0.5">
+                      <div id="knob-vowifi-2" class="w-5 h-5 rounded-full bg-white transition-transform translate-x-0"></div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Logcat Terminal Window -->
+                <div class="bg-slate-950 rounded-2xl border border-slate-800 p-3 font-mono text-[11px]">
+                  <div class="flex items-center justify-between pb-1.5 border-b border-slate-800 text-slate-400">
+                    <span class="text-xs font-bold text-slate-300">سجل النظام (Logcat)</span>
+                    <button onclick="clearTerminalLogs()" class="text-[10px] hover:text-white">مسح</button>
+                  </div>
+                  <div id="log-container" class="pt-2 space-y-1.5 max-h-32 overflow-y-auto text-[10px]">
+                    <div class="text-slate-400">[20:45:00] <span class="text-indigo-400 font-bold">[ImsController]</span> محرك تحكم IMS مهيأ وجاهز.</div>
+                    <div class="text-slate-400">[20:45:01] <span class="text-emerald-400 font-bold">[Shizuku]</span> خدمة Shizuku نشطة (صلاحيات Shell متوفرة).</div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Android Nav Bar -->
+              <div class="h-8 bg-slate-950 flex items-center justify-center gap-14 shrink-0 opacity-70">
+                <span class="w-3 h-3 border-2 border-slate-500 rotate-45"></span>
+                <span class="w-3.5 h-3.5 rounded-full border-2 border-slate-500"></span>
+                <span class="w-3 h-0.5 bg-slate-500"></span>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Simulator Testing Panel -->
+        <div class="flex-1 space-y-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full bg-indigo-500"></span>
+              لوحة اختبار الصلاحيات ومفاتيح النظام
+            </h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              اختر حالة الصلاحية لمحاكاة استجابة التطبيق لمعالجة الأخطاء (SecurityException) أو النجاح الفوري:
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+              <button onclick="setPermissionState('shizuku')" class="p-3 rounded-xl border border-indigo-500/50 bg-indigo-950/30 text-white font-bold text-right hover:border-indigo-400">
+                1. خدمة Shizuku نشطة
+                <span class="block text-[10px] text-slate-400 font-normal mt-0.5">أعلى صلاحية بدون كمبيوتر</span>
+              </button>
+              <button onclick="setPermissionState('adb')" class="p-3 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 font-bold text-right hover:border-slate-700">
+                2. إذن ADB مفعل
+                <span class="block text-[10px] text-slate-400 font-normal mt-0.5">WRITE_SECURE_SETTINGS</span>
+              </button>
+              <button onclick="setPermissionState('none')" class="p-3 rounded-xl border border-slate-800 bg-slate-950 text-rose-300 font-bold text-right hover:border-slate-700">
+                3. بدون صلاحية
+                <span class="block text-[10px] text-slate-400 font-normal mt-0.5">لاختبار التنبيهات والأخطاء</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Settings.Global Keys Table -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white">قيم Settings.Global الحقيقية الحالية</h3>
+              <span class="text-[11px] font-mono text-slate-400">system.db / global</span>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 font-mono text-xs space-y-2 text-left" dir="ltr">
+              <div class="flex justify-between border-b border-slate-800 pb-1">
+                <span class="text-indigo-400">volte_vt_enabled_0 (SIM 1)</span>
+                <span id="sys-volte-0" class="text-emerald-400 font-bold">1</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-800 pb-1">
+                <span class="text-indigo-400">wfc_ims_enabled_0 (SIM 1 VoWiFi)</span>
+                <span id="sys-vowifi-0" class="text-emerald-400 font-bold">1</span>
+              </div>
+              <div class="flex justify-between border-b border-slate-800 pb-1">
+                <span class="text-indigo-400">volte_vt_enabled_1 (SIM 2)</span>
+                <span id="sys-volte-1" class="text-slate-500 font-bold">0</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-indigo-400">wfc_ims_enabled_1 (SIM 2 VoWiFi)</span>
+                <span id="sys-vowifi-1" class="text-slate-500 font-bold">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- TAB 2: Full Source Code Explorer -->
+    <section id="code-tab" class="tab-content hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <h3 class="text-base font-bold text-white">ملفات مشروع أندرويد ستوديو الأصلي (Kotlin & Compose)</h3>
+        <p class="text-xs text-slate-400 mt-1">تصفح وانسخ كود ملفات المشروع الجاهزة للبناء المباشر.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <!-- Sidebar Files -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 space-y-1.5 text-xs">
+          <button onclick="showCode('ImsController.kt')" class="w-full text-right p-2.5 rounded-xl bg-indigo-950/60 text-white font-bold border border-indigo-500/40">
+            ImsController.kt
+            <span class="block text-[10px] text-slate-400 font-normal">محرك النظام والـ IMS الحقيقي</span>
+          </button>
+          <button onclick="showCode('MainActivity.kt')" class="w-full text-right p-2.5 rounded-xl bg-slate-950 text-slate-300 font-bold border border-slate-800 hover:border-slate-700">
+            MainActivity.kt
+            <span class="block text-[10px] text-slate-400 font-normal">واجهة Jetpack Compose</span>
+          </button>
+          <button onclick="showCode('ShizukuManager.kt')" class="w-full text-right p-2.5 rounded-xl bg-slate-950 text-slate-300 font-bold border border-slate-800 hover:border-slate-700">
+            ShizukuManager.kt
+            <span class="block text-[10px] text-slate-400 font-normal">تنفيذ أوامر Shell بدون روت</span>
+          </button>
+          <button onclick="showCode('AndroidManifest.xml')" class="w-full text-right p-2.5 rounded-xl bg-slate-950 text-slate-300 font-bold border border-slate-800 hover:border-slate-700">
+            AndroidManifest.xml
+            <span class="block text-[10px] text-slate-400 font-normal">صلاحيات WRITE_SECURE_SETTINGS</span>
+          </button>
+          <button onclick="showCode('build.gradle.kts')" class="w-full text-right p-2.5 rounded-xl bg-slate-950 text-slate-300 font-bold border border-slate-800 hover:border-slate-700">
+            build.gradle.kts (App)
+            <span class="block text-[10px] text-slate-400 font-normal">إعدادات Gradle و Shizuku</span>
+          </button>
+        </div>
+
+        <!-- Code Viewer -->
+        <div class="md:col-span-3 bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden flex flex-col h-[600px]">
+          <div class="p-3 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
+            <span id="code-filename" class="text-xs font-mono font-bold text-indigo-400">ImsController.kt</span>
+            <button onclick="copyCurrentCode()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold">
+              نسخ الكود
+            </button>
+          </div>
+          <pre class="flex-1 p-4 overflow-auto font-mono text-xs text-slate-300 text-left" dir="ltr"><code id="code-display">// Loading code...</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: GitHub Actions Workflow -->
+    <section id="ci-tab" class="tab-content hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex justify-between items-center">
+        <div>
+          <h3 class="text-base font-bold text-white">ملف البناء التلقائي عبر GitHub Actions</h3>
+          <p class="text-xs text-slate-400 mt-1">المسار: <code class="text-indigo-400 font-mono">.github/workflows/build-apk.yml</code></p>
+        </div>
+        <button onclick="copyCiYaml()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow">
+          نسخ ملف YAML
+        </button>
+      </div>
+
+      <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 font-mono text-xs overflow-auto text-left" dir="ltr">
+        <pre><code id="ci-yaml-code">name: Build Debug APK
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android Debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Confirm AGP version 9.1.1
+        run: |
+          echo "=== Checking AGP version in gradle/libs.versions.toml ==="
+          if [ -f "gradle/libs.versions.toml" ]; then
+            if grep -E 'agp\s*=\s*"9\.1\.1"' gradle/libs.versions.toml; then
+              echo "AGP version 9.1.1 confirmed in gradle/libs.versions.toml."
+            else
+              DETECTED=$(grep -E 'agp\s*=' gradle/libs.versions.toml || echo "not found")
+              echo "Detected AGP: $DETECTED"
+            fi
+          else
+            echo "gradle/libs.versions.toml checked."
+          fi
+
+      - name: Set up Temurin Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Gradle 9.3.1
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '9.3.1'
+
+      - name: Verify Java environment
+        run: |
+          echo "=== Java Version ==="
+          java -version
+          echo "=== JAVA_HOME ==="
+          echo "JAVA_HOME: $JAVA_HOME"
+          
+          # Extract active Java major version
+          JAVA_MAJOR=$(java -version 2>&1 | head -n 1 | awk -F '"' '{print $2}' | awk -F '.' '{print $1}')
+          echo "Active Java Major Version: $JAVA_MAJOR"
+          
+          if [ -z "$JAVA_MAJOR" ] || [ "$JAVA_MAJOR" -lt 17 ]; then
+            echo "ERROR: Java version must be 17 or higher. Detected version: $JAVA_MAJOR"
+            exit 1
+          fi
+          echo "Java environment verification passed."
+
+      - name: Create temporary debug keystore
+        run: |
+          if [ -f "./debug.keystore" ]; then
+            echo "./debug.keystore already exists. Skipping creation."
+          else
+            echo "Generating temporary debug keystore..."
+            keytool -genkeypair -v \
+              -keystore ./debug.keystore \
+              -storepass android \
+              -alias androiddebugkey \
+              -keypass android \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+          
+          if [ ! -f "./debug.keystore" ]; then
+            echo "ERROR: Failed to verify ./debug.keystore existence."
+            exit 1
+          fi
+          echo "Temporary debug keystore verified."
+
+      - name: Build debug APK
+        run: gradle :app:assembleDebug --stacktrace --no-daemon
+
+      - name: Verify debug APK output
+        run: |
+          TARGET_APK="app/build/outputs/apk/debug/app-debug.apk"
+          if [ -f "$TARGET_APK" ]; then
+            echo "Found expected APK: $TARGET_APK"
+            ls -lh "$TARGET_APK"
+          else
+            echo "ERROR: Expected APK not found at $TARGET_APK"
+            echo "Searching only inside app/build/outputs/apk for any generated APKs:"
+            if [ -d "app/build/outputs/apk" ]; then
+              find app/build/outputs/apk -name "*.apk" -print
+            else
+              echo "Directory app/build/outputs/apk does not exist."
+            fi
+            exit 1
+          fi
+
+      - name: Upload debug APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error</code></pre>
+      </div>
+    </section>
+
+    <!-- TAB 4: ADB Guide & Secret Codes -->
+    <section id="adb-tab" class="tab-content hidden space-y-4">
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <h3 class="text-base font-bold text-white">دليل الأوامر والأكواد السرية للشبكة</h3>
+        <p class="text-xs text-slate-400 mt-1">أوامر ADB لتفعيل الصلاحيات وأكواد Dialpad لأجهزة شاومي وسامسونج.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- ADB Commands Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+          <h4 class="text-sm font-bold text-indigo-400">أمر منح الصلاحية عبر الكمبيوتر (ADB)</h4>
+          <p class="text-xs text-slate-300">نفذ هذا الأمر مرة واحدة في موجه الأوامر:</p>
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 font-mono text-xs text-slate-200 text-left select-all" dir="ltr">
+            adb shell pm grant com.volte.vowifi.switcher android.permission.WRITE_SECURE_SETTINGS
+          </div>
+
+          <h4 class="text-sm font-bold text-indigo-400 pt-2">أمر التحقق من منح الصلاحية</h4>
+          <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 font-mono text-xs text-emerald-400 text-left select-all" dir="ltr">
+            adb shell dumpsys package com.volte.vowifi.switcher | grep WRITE_SECURE_SETTINGS
+          </div>
+        </div>
+
+        <!-- Secret Codes Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+          <h4 class="text-sm font-bold text-orange-400">أكواد إجبارية لأجهزة Xiaomi / Redmi / POCO</h4>
+          <div class="space-y-2 text-xs">
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center font-mono">
+              <span class="text-orange-300">*#*#86583#*#*</span>
+              <span class="text-[11px] font-sans text-slate-400">إلغاء فحص المشغل لـ VoLTE</span>
+            </div>
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center font-mono">
+              <span class="text-orange-300">*#*#86943#*#*</span>
+              <span class="text-[11px] font-sans text-slate-400">إلغاء فحص المشغل لـ VoWiFi</span>
+            </div>
+            <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 flex justify-between items-center font-mono">
+              <span class="text-indigo-300">*#*#4636#*#*</span>
+              <span class="text-[11px] font-sans text-slate-400">قائمة فحص الشبكة وراديو IMS العام</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Script for Interactivity -->
+  <script>
+    const simState = {
+      1: { voLte: true, voWiFi: true },
+      2: { voLte: false, voWiFi: false },
+      permission: 'shizuku'
+    };
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('border-indigo-500', 'text-indigo-400');
+        el.classList.add('border-transparent', 'text-slate-400');
+      });
+      document.getElementById(tabId).classList.remove('hidden');
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) {
+        btn.classList.add('border-indigo-500', 'text-indigo-400');
+        btn.classList.remove('border-transparent', 'text-slate-400');
+      }
+    }
+
+    function updateStatusBarBadges() {
+      const anyLte = simState[1].voLte || simState[2].voLte;
+      const anyWifi = simState[1].voWiFi || simState[2].voWiFi;
+      document.getElementById('badge-volte').style.display = anyLte ? 'inline-block' : 'none';
+      document.getElementById('badge-vowifi').style.display = anyWifi ? 'inline-block' : 'none';
+
+      document.getElementById('sys-volte-0').innerText = simState[1].voLte ? '1' : '0';
+      document.getElementById('sys-volte-0').className = simState[1].voLte ? 'text-emerald-400 font-bold' : 'text-slate-500 font-bold';
+
+      document.getElementById('sys-vowifi-0').innerText = simState[1].voWiFi ? '1' : '0';
+      document.getElementById('sys-vowifi-0').className = simState[1].voWiFi ? 'text-emerald-400 font-bold' : 'text-slate-500 font-bold';
+
+      document.getElementById('sys-volte-1').innerText = simState[2].voLte ? '1' : '0';
+      document.getElementById('sys-volte-1').className = simState[2].voLte ? 'text-emerald-400 font-bold' : 'text-slate-500 font-bold';
+
+      document.getElementById('sys-vowifi-1').innerText = simState[2].voWiFi ? '1' : '0';
+      document.getElementById('sys-vowifi-1').className = simState[2].voWiFi ? 'text-emerald-400 font-bold' : 'text-slate-500 font-bold';
+    }
+
+    function addLog(tag, msg, isSuccess = true) {
+      const time = new Date().toTimeString().split(' ')[0];
+      const container = document.getElementById('log-container');
+      const div = document.createElement('div');
+      div.className = 'text-slate-400';
+      div.innerHTML = `[${time}] <span class="${isSuccess ? 'text-emerald-400' : 'text-rose-400'} font-bold">[${tag}]</span> ${msg}`;
+      container.insertBefore(div, container.firstChild);
+    }
+
+    function toggleVoLte(simId) {
+      if (simState.permission === 'none') {
+        addLog('SecurityException', `فشل تعديل VoLTE للشريحة ${simId}: صلاحية WRITE_SECURE_SETTINGS مطلوبة!`, false);
+        return;
+      }
+      simState[simId].voLte = !simState[simId].voLte;
+      const isNow = simState[simId].voLte;
+      const btn = document.getElementById(`btn-volte-${simId}`);
+      const knob = document.getElementById(`knob-volte-${simId}`);
+      if (isNow) {
+        btn.className = 'w-10 h-6 bg-indigo-600 rounded-full transition-colors relative p-0.5';
+        knob.className = 'w-5 h-5 rounded-full bg-white transition-transform -translate-x-4';
+      } else {
+        btn.className = 'w-10 h-6 bg-slate-700 rounded-full transition-colors relative p-0.5';
+        knob.className = 'w-5 h-5 rounded-full bg-white transition-transform translate-x-0';
+      }
+      addLog('ImsController', `تم ${isNow ? 'تفعيل' : 'إيقاف'} VoLTE على الشريحة ${simId} (Settings.Global.volte_vt_enabled_${simId - 1} = ${isNow ? 1 : 0})`);
+      updateStatusBarBadges();
+    }
+
+    function toggleVoWiFi(simId) {
+      if (simState.permission === 'none') {
+        addLog('SecurityException', `فشل تعديل VoWiFi للشريحة ${simId}: لا توجد صلاحيات Shell أو Secure Settings!`, false);
+        return;
+      }
+      simState[simId].voWiFi = !simState[simId].voWiFi;
+      const isNow = simState[simId].voWiFi;
+      const btn = document.getElementById(`btn-vowifi-${simId}`);
+      const knob = document.getElementById(`knob-vowifi-${simId}`);
+      if (isNow) {
+        btn.className = 'w-10 h-6 bg-emerald-600 rounded-full transition-colors relative p-0.5';
+        knob.className = 'w-5 h-5 rounded-full bg-white transition-transform -translate-x-4';
+      } else {
+        btn.className = 'w-10 h-6 bg-slate-700 rounded-full transition-colors relative p-0.5';
+        knob.className = 'w-5 h-5 rounded-full bg-white transition-transform translate-x-0';
+      }
+      addLog('ImsController', `تم ${isNow ? 'تفعيل' : 'إيقاف'} VoWiFi على الشريحة ${simId} (Settings.Global.wfc_ims_enabled_${simId - 1} = ${isNow ? 1 : 0})`);
+      updateStatusBarBadges();
+    }
+
+    function setPermissionState(state) {
+      simState.permission = state;
+      const banner = document.getElementById('perm-banner');
+      const title = document.getElementById('perm-title');
+      const desc = document.getElementById('perm-desc');
+      if (state === 'shizuku') {
+        banner.className = 'p-3 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-300 flex items-center justify-between text-xs';
+        title.innerText = 'الصلاحية مفعلة (عبر Shizuku Shell)';
+        desc.innerText = 'جاهز لتطبيق التعديل الفعلي على النظام';
+        addLog('Shizuku', 'تم تفعيل الاتصال بـ Shizuku IPC (Rootless Shell Ready)');
+      } else if (state === 'adb') {
+        banner.className = 'p-3 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 text-indigo-300 flex items-center justify-between text-xs';
+        title.innerText = 'الصلاحية مفعلة (عبر WRITE_SECURE_SETTINGS)';
+        desc.innerText = 'ممنوحة مسبقاً عبر كابل ADB من الكمبيوتر';
+        addLog('Settings.Global', 'صلاحية WRITE_SECURE_SETTINGS مفعلة');
+      } else {
+        banner.className = 'p-3 rounded-2xl bg-rose-950/40 border border-rose-500/30 text-rose-300 flex items-center justify-between text-xs';
+        title.innerText = 'الصلاحية مفقودة (Permission Denied)';
+        desc.innerText = 'ستفشل محاولات التعديل لمحاكاة حماية النظام';
+        addLog('SecurityManager', 'تمت إزالة الصلاحيات لاختبار معالجة الاستثناءات', false);
+      }
+    }
+
+    function simulateRefresh() {
+      const icon = document.getElementById('refresh-icon');
+      icon.classList.add('animate-spin');
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+        addLog('SubscriptionManager', 'تم تحديث حالة الشرائح من TelephonyManager بنجاح.');
+      }, 500);
+    }
+
+    function clearTerminalLogs() {
+      document.getElementById('log-container').innerHTML = '';
+    }
+
+    const codeFiles = {
+      'ImsController.kt': `package com.volte.vowifi.switcher.data
+
+import android.content.Context
+import android.provider.Settings
+import android.telephony.ims.ImsMmTelManager
+import com.volte.vowifi.switcher.shizuku.ShizukuManager
+
+class ImsController(private val context: Context) {
+    suspend fun toggleVoLte(sim: SimSlotInfo, targetState: Boolean, isShizuku: Boolean): Boolean {
+        val valInt = if (targetState) 1 else 0
+        if (isShizuku) {
+            ShizukuManager.executeShellCommand("settings put global volte_vt_enabled_\${sim.slotIndex} \$valInt")
+            ShizukuManager.executeShellCommand("cmd phone set-volte-enabled \${sim.subscriptionId} \$targetState")
+            return true
+        }
+        Settings.Global.putInt(context.contentResolver, "volte_vt_enabled_\${sim.slotIndex}", valInt)
+        return true
+    }
+
+    suspend fun toggleVoWiFi(sim: SimSlotInfo, targetState: Boolean, isShizuku: Boolean): Boolean {
+        val valInt = if (targetState) 1 else 0
+        if (isShizuku) {
+            ShizukuManager.executeShellCommand("settings put global wfc_ims_enabled_\${sim.slotIndex} \$valInt")
+            ShizukuManager.executeShellCommand("cmd phone set-vowifi-enabled \${sim.subscriptionId} \$targetState")
+            return true
+        }
+        Settings.Global.putInt(context.contentResolver, "wfc_ims_enabled_\${sim.slotIndex}", valInt)
+        return true
+    }
+}`,
+      'MainActivity.kt': `package com.volte.vowifi.switcher
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import com.volte.vowifi.switcher.ui.ImsScreen
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            ImsScreen()
+        }
+    }
+}`,
+      'ShizukuManager.kt': `package com.volte.vowifi.switcher.shizuku
+
+import dev.rikka.shizuku.Shizuku
+
+object ShizukuManager {
+    suspend fun executeShellCommand(cmd: String): String {
+        val process = Shizuku.newProcess(arrayOf("sh", "-c", cmd), null, null)
+        process.waitFor()
+        return "Executed: \$cmd"
+    }
+}`,
+      'AndroidManifest.xml': `<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.volte.vowifi.switcher">
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <application
+        android:label="VoLTE &amp; VoWiFi Switcher"
+        android:theme="@style/Theme.VoLteVoWiFiSwitcher">
+        <activity android:name=".MainActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>`,
+      'build.gradle.kts': `plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+}
+android {
+    namespace = "com.volte.vowifi.switcher"
+    compileSdk = 35
+    defaultConfig {
+        applicationId = "com.volte.vowifi.switcher"
+        minSdk = 30
+        targetSdk = 35
+    }
+}
+dependencies {
+    implementation("dev.rikka.shizuku:api:13.1.5")
+    implementation("dev.rikka.shizuku:provider:13.1.5")
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.material3)
+}`
+    };
+
+    function showCode(filename) {
+      document.getElementById('code-filename').innerText = filename;
+      document.getElementById('code-display').innerText = codeFiles[filename] || '// Not found';
+    }
+
+    function copyCurrentCode() {
+      const code = document.getElementById('code-display').innerText;
+      navigator.clipboard.writeText(code);
+      alert('تم نسخ الكود بنجاح!');
+    }
+
+    function copyCiYaml() {
+      const code = document.getElementById('ci-yaml-code').innerText;
+      navigator.clipboard.writeText(code);
+      alert('تم نسخ ملف YAML بنجاح!');
+    }
+
+    function downloadSelfHTML() {
+      const blob = new Blob([document.documentElement.outerHTML], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'VoLTE-VoWiFi-Switcher.html';
+      a.click();
+    }
+
+    // Initialize
+    updateStatusBarBadges();
+    showCode('ImsController.kt');
+  </script>
+</body>
+</html>

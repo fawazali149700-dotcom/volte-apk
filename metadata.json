@@ -1,0 +1,6 @@
+{
+  "name": "VoLTE & VoWiFi SIM Manager - Android Native App",
+  "description": "تطبيق أندرويد أصلي للتحكم الكامل في تفعيل وتعطيل مكالمات VoLTE و VoWiFi لكل شريحة SIM مع دعم Shizuku و ADB ومحاكي تفاعلي وكود كامل للمشروع.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
